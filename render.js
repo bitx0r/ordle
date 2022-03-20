@@ -1,6 +1,6 @@
 class Renderer {
 
-    constructor(rows, cols, maxguesses, charset, word_picker, word_validator, update_keyboard) {
+    constructor(rows, cols, asciimode, maxguesses, charset, word_picker, word_validator, update_keyboard) {
         this.rows = rows;
         this.cols = cols;
         this.dones = {};
@@ -11,8 +11,46 @@ class Renderer {
         this.word_picker = word_picker;
         this.word_validator = word_validator;
         this.update_keyboard = update_keyboard;
+        this.set_regular_mode();
+
+        if (asciimode) {
+            this.set_ascii_mode()
+         }
 
         document.addEventListener("keyup", (e)=> this.on_input(e));
+    }
+
+    toggle_mode() {
+        if (this.guesscharclass === "asciiguesschar") {
+            this.regular_mode();
+            return;
+        }
+        this.ascii_mode();
+    }
+
+    set_ascii_mode() {
+        this.guessrowclass = "asciiguessrow";
+        this.guesscharclass = "asciiguesschar";
+        this.resultcharclass = "asciiresultchar";
+        this.resultrowclass = "asciiresultrow";
+        this.showcursor = true;
+    }
+    ascii_mode() {
+        this.set_ascii_mode();
+        this.redraw();
+    }
+
+    set_regular_mode() {
+        this.guessrowclass = "guessrow";
+        this.guesscharclass = "guesschar";
+        this.resultcharclass = "resultchar";
+        this.resultrowclass = "resultrow";
+        this.showcursor = false;
+    }
+
+    regular_mode() {
+        this.set_regular_mode();
+        this.redraw();
     }
 
     async create_games()
@@ -50,7 +88,7 @@ class Renderer {
         }
     }
     
-    create_board(nochar, charclass, minrows, mincols, board) {
+    create_board(nochar, charclass, rowclass, minrows, mincols, board) {
         let root = document.createElement("div");
         if (board.winner) {
             root.classList.add("win");
@@ -59,6 +97,7 @@ class Renderer {
         for (const guess of board.board) {
             // row
             let r = document.createElement("div");
+            r.classList.add(rowclass);
             for (let i = 0; i < mincols; ++i) {
                 // word
                 let c = guess.g[i];
@@ -82,6 +121,10 @@ class Renderer {
                 else {
                     l.classList.add(charclass);
                     l.classList.add("X");
+                    if (this.showcursor && (i === 0 || guess.g[i-1])) {
+                        l.classList.add(charclass+"cursor");
+                    }
+
                     l.innerHTML = "&nbsp;";
                 }
     
@@ -93,6 +136,7 @@ class Renderer {
         for (let i = 0; i < minrows - board.board.length; ++i)
         {
             let r = document.createElement("div");
+            r.classList.add(rowclass);
             for (let j = 0; j < mincols; ++j) {
                 // word
                 let l = document.createElement("span");
@@ -115,8 +159,8 @@ class Renderer {
         root.innerHTML = "";
         resultroot.innerHTML = "";
     
-        let b = this.create_board(false, "guesschar", minrows, mincols, board);
-        let r = this.create_board(true, "resultchar", minrows, mincols, board);
+        let b = this.create_board(false, this.guesscharclass, this.guessrowclass, minrows, mincols, board);
+        let r = this.create_board(true, this.resultcharclass, this.resultrowclass, minrows, mincols, board);
     
         root.appendChild(b);
         resultroot.appendChild(r);
@@ -174,6 +218,11 @@ class Renderer {
     
     async on_input(ev)
     {
+        if (ev.ctrlKey && ev.shiftKey && ev.key === " ") {
+            this.toggle_mode();
+            return;
+        }
+
         for (let i=0; i < this.rows; ++i)
         {
             for (let j=0; j < this.cols; ++j ) {

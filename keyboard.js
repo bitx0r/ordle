@@ -6,8 +6,8 @@ function create_key(c, doublewide) {
         k.classList.add("widekey");
     }
     k.id = "key_" + c;
-    if (c === "Backspace") { k.innerHTML = "<";}
-    else if (c === "Enter") { k.innerHTML = ">"; }
+    if (c === "Backspace") { k.innerHTML = "BkSp";}
+    else if (c === "Enter") { k.innerHTML = "Ent"; }
     else { k.innerHTML = c; }
 
     k.onclick = () => { 
