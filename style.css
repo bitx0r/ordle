@@ -1,0 +1,105 @@
+body {
+    background-color: darkslategray;
+    color: white;
+    font-family:'Courier New', Courier, monospace;
+    font-size:x-large;
+    font-weight: bolder;
+}
+
+.boardarea {
+    background-color: darkslategray;
+    color: white;
+    font-family:'Courier New', Courier, monospace;
+    font-size:x-large;
+    font-weight: bolder;
+}
+
+.resultwindowx {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.keybx {
+    margin-top: 10px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+}
+
+.keybrow {
+    clear:both;
+    align-items: center;
+    justify-content: center;
+    display:flex;
+}
+
+.key {
+    border-style: solid;
+    border-width: 1px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border-color: white;
+    font-size: x-large;
+    font-weight: normal;
+}
+
+.keybused {
+    background-color: black;
+    color: darkgray;
+}
+
+.boards {
+    align-items: inherit;
+    justify-content: left;
+    display:inline-flex;
+    margin-top: 0px;
+}
+
+.game {
+    margin: 10px 10px 10px 10px;
+    float: left;
+}
+
+.guesschar {
+    border-style: solid;
+    border-width: 1px;
+    padding-left: 20px;
+    padding-right: 20px;
+    border-color: white;
+}
+
+.resultgame {
+    margin: 10px 10px 10px 10px;
+    float: left;
+}
+
+.resultboards {
+    margin-top: 0px;
+    clear: both;
+}
+
+.resultchar {
+    border-style: solid;
+    border-width: 1px;
+    padding-left: .2em;
+    padding-right: .2em;
+    border-color: white;
+    font-size: small;
+}
+
+.invalidword {
+    color: red;
+}
+
+.maybechar {
+    background-color: goldenrod;
+}
+
+.correctchar {
+    background-color: green;
+}
+
+.wrongchar {
+    background-color: darkslategray;
+}
