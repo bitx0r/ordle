@@ -54,7 +54,7 @@ class Controller {
         if (e.isComposing || e.code === 229) { return; }
 
         // enter
-        if (e.keyCode === 13) {
+        if (e.key === "Enter") {
             if (this.valid_word(this.word)) {
                 this.ordle.submit_guess(this.word);
                 this.update_keyboard(this.word);
@@ -63,7 +63,7 @@ class Controller {
         }
 
         // backspace
-        if (e.keyCode === 8) {
+        if (e.key === "Backspace") {
             if (this.word.length === 0) { return; }
             this.word = this.word.substring(0, this.word.length-1);
         }
