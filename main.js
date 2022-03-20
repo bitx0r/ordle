@@ -1,7 +1,10 @@
 
-let ALPHACHARS = "qwertyuiopasdfghjklzxcvbnm";
-let MATHCHARS = "1234567890-+*/=";
+const ALPHACHARS = "qwertyuiopasdfghjklzxcvbnm";
+const MATHCHARS = "1234567890-+*/=";
+const MAXERRORS = 5;
+const WORDLEN = 5;
 
+let maxguesses;
 let numboards = 0;
 let dones = {};
 let controllers = new Array();
@@ -50,128 +53,160 @@ function on_done(gameid, winner) {
     }
 }
 
+function create_board(nochar, charclass, minrows, mincols, board) {
+    let root = document.createElement("div");
+    if (board.winner) {
+        root.classList.add("win");
+    }
+
+    for (const guess of board.board) {
+        // row
+        let r = document.createElement("div");
+        for (let i = 0; i < mincols; ++i) {
+            // word
+            let c = guess.g[i];
+            let l = document.createElement("span");
+            l.innerHTML = "&nbsp;";
+
+            if (c) {
+                l.classList.add(charclass);
+
+                if (!c.v) {
+                    l.classList.add("invalidword");                    
+                }
+                else {
+                    l.classList.add(c.s);
+                }
+
+                if (!nochar) { 
+                    l.innerHTML = c.c.length ? c.c : "&nbsp;"
+                }
+            }
+            else {
+                l.classList.add(charclass);
+                l.classList.add("X");
+                l.innerHTML = "&nbsp;";
+            }
+
+            r.appendChild(l);
+        }
+        root.appendChild(r);
+    }
+
+    for (let i = 0; i < minrows - board.board.length; ++i)
+    {
+        let r = document.createElement("div");
+        for (let j = 0; j < mincols; ++j) {
+            // word
+            let l = document.createElement("span");
+            l.innerHTML = "&nbsp;";
+
+            l.classList.add(charclass);
+            l.classList.add("X");
+            l.innerHTML = "&nbsp;";
+            r.appendChild(l);
+        }
+        root.appendChild(r);
+    }
+
+    return root;
+}
+
 function on_draw(gameid, minrows, mincols, board) {
     let root = document.getElementById("game"+gameid);
     let resultroot = document.getElementById("resultgame"+gameid);
     root.innerHTML = "";
     resultroot.innerHTML = "";
 
-    for (const guess of board.board) {
-        // row
-        let r = document.createElement("div");
-        let rr = document.createElement("div");
-        for (let i = 0; i < mincols; ++i) {
-            // word
-            let c = guess.g[i];
-            let l = document.createElement("span");
-            let rl = document.createElement("span");
-            rl.innerHTML = "&nbsp;";
+    let b = create_board(false, "guesschar", minrows, mincols, board);
+    let r = create_board(true, "resultchar", minrows, mincols, board);
 
-            if (c) {
-                l.classList.add("guesschar");
-                rl.classList.add("resultchar");
-                if (!c.v) {
-                    l.classList.add("invalidword");                    
-                }
-                else if (c.s === 'O') {
-                    l.classList.add("correctchar");
-                    rl.classList.add("correctchar");
-                }
-                else if (c.s === 'X') {
-                    l.classList.add("wrongchar");
-                    rl.classList.add("wrongchar");
-                }
-                else if (c.s === '?') {
-                    l.classList.add("maybechar");
-                    rl.classList.add("maybechar");
-                }
+    root.appendChild(b);
+    resultroot.appendChild(r);
+}
 
-                l.innerHTML = c.c.length ? c.c : "&nbsp;"
-            }
-            else {
-                l.classList.add("guesschar");
-                l.classList.add("wrongchar");
-                rl.classList.add("resultchar");
-                rl.classList.add("wrongchar");
-                l.innerHTML = "&nbsp;";
-            }
+function create_area(rows, cols, rowclass, colclass) {
+    let a = document.createElement("span");
 
-            r.appendChild(l);
-            rr.appendChild(rl);
+    for (let i=0; i < rows; ++i) {
+        let boards = document.createElement("div");
+        boards.classList.add(rowclass);
+        boards.id = rowclass + "row" + i;
+
+        for( let j=0; j < cols; ++j) {
+            let game = document.createElement("span");
+            game.classList.add(colclass);
+            game.id = colclass + (i*cols + j);
+            boards.appendChild(game);
         }
-        root.appendChild(r);
-        resultroot.appendChild(rr);
-    }
 
-    for (let i = 0; i < minrows - board.board.length; ++i)
-    {
-        let r = document.createElement("div");
-        let rr = document.createElement("div");
-        for (let j = 0; j < mincols; ++j) {
-            // word
-            let l = document.createElement("span");
-            let rl = document.createElement("span");
-            rl.innerHTML = "&nbsp;";
-
-            l.classList.add("guesschar");
-            l.classList.add("wrongchar");
-            rl.classList.add("resultchar");
-            rl.classList.add("wrongchar");
-            l.innerHTML = "&nbsp;";
-            r.appendChild(l);
-            rr.appendChild(rl);
-        }
-        root.appendChild(r);
-        resultroot.appendChild(rr);
+        a.appendChild(boards);
     }
+    return a;
 }
 
 function setup_areas(rows, cols) {
     let boardarea = document.body.getElementsByClassName("boardarea")[0];
     let resultwindow = document.body.getElementsByClassName("resultwindow")[0];
-    for (let i=0; i < rows; ++i) {
-        let boards = document.createElement("div");
-        boards.classList.add("boards");
-        let results = document.createElement("div");        
-        results.classList.add("resultboards");
 
-        for( let j=0; j < cols; ++j) {
-            let game = document.createElement("span");
-            game.classList.add("game");
-            game.id = "game" + (i*cols + j);
-            let resultgame = document.createElement("span");
-            resultgame.classList.add("resultgame");
-            resultgame.id = "resultgame" + (i*cols + j);
+    let b = create_area(rows, cols, "boards", "game");
+    let r = create_area(rows, cols, "resultboards", "resultgame");
 
-            boards.appendChild(game);
-            results.appendChild(resultgame);
-        }
-
-        boardarea.appendChild(boards);
-        resultwindow.appendChild(results);
-    }
+    boardarea.appendChild(b);
+    resultwindow.appendChild(r);
 }
 
-const MAXERRORS = 5;
-async function new_game(n, i) {
-    const word = await word_picker();
-    const wordlen = word.length;
-    const maxguesses = n + MAXERRORS;
 
-    let controller = new Controller(i, (o) => on_draw(i, maxguesses, wordlen, o), (k) => { return ALPHACHARS.includes(k); }, word, maxguesses, word_validator, on_done, (x) => update_keyboard(x));
-    controller.setup();
-    controller.redraw();
-    controllers.push(controller);
+async function new_game(i) {
+    const word = await word_picker();
+
+    let controller = new Controller(i, (k) => { return ALPHACHARS.includes(k); }, word, maxguesses, word_validator, on_done, (x) => update_keyboard(x));
+    return controller;
+}
+
+async function redraw()
+{
+    for (let i=0; i < rows; ++i)
+    {
+        for (let j=0; j < cols; ++j ) {
+            let b = controllers[i][j].get_board();
+            on_draw(i*cols + j, maxguesses, WORDLEN, b);
+        }
+    }
+
+}
+
+async function on_input(ev)
+{
+    for (let i=0; i < rows; ++i)
+    {
+        for (let j=0; j < cols; ++j ) {
+            controllers[i][j].on_input(ev);
+        }
+    }
+
+    redraw();
 }
 
 async function on_load(r, c) {
     rows = r;
     cols = c;
+    numboards = r*c;
+    maxguesses = numboards + MAXERRORS;
+    
     load_keyb(ALPHACHARS);
     setup_areas(r,c);
+    document.addEventListener("keyup", (e)=> on_input(e));
 
-    numboards = r*c;
-    for (let i=0; i < numboards; ++i ) {
-        await new_game(numboards, i);
+    for (let i=0; i < rows; ++i)
+    {
+        let a = new Array();
+        for (let j=0; j < cols; ++j ) {
+            const g = await new_game(i*cols + j);
+            a.push(g);
+        }
+        controllers.push(a);
     }
+
+    redraw();
 }

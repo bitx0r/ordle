@@ -1,5 +1,5 @@
 class Controller {
-    constructor(gameid, on_update, valid_char, word, maxguesses, valid_word, on_done, update_keyboard) {
+    constructor(gameid, valid_char, word, maxguesses, valid_word, on_done, update_keyboard) {
         this.gameid = gameid;
         this.ordle = new Ordle(word, maxguesses);
         this.word = "";
@@ -27,13 +27,6 @@ class Controller {
             this.on_done = (x) => { return true; };
         }
 
-        if (on_update instanceof Function) {
-            this.on_update = on_update;
-        }
-        else {
-            this.on_update = () => { console.log(this.ordle.toJsonObj()); };
-        }
-
         if (update_keyboard instanceof Function) {
             this.update_keyboard = update_keyboard;
         }
@@ -45,19 +38,15 @@ class Controller {
 
     get_id() { return this.gameid; }
 
-    setup() {
-        document.body.addEventListener('keyup', (ev) => { this.on_input(ev); });
-    }
-
-    redraw()
+    get_board()
     {
         let x = {...this.ordle.toJsonObj()};
         if (!x.done && x.board) {
             x.board.push(this.guess.toJsonObj());
         }
-        this.on_update(x);
+        return x;
     }
-
+  
     on_input(e)
     {
         if (this.ordle.is_done()) { return; }
@@ -85,12 +74,6 @@ class Controller {
         this.guess = new Guess(this.word, this.minlength);
         if (this.guess.length() === this.minlength && !this.valid_word(this.word)) {
             this.guess.set_invalid();
-        }
-
-        this.redraw();
-
-        if (this.ordle.is_done()) {
-            this.on_done(this.gameid, this.ordle.is_winner());
         }
     }
 }

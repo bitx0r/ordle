@@ -10,7 +10,7 @@ class Ord {
     }
 
     toJsonObj() {
-        return {c: this.c, s: (this.s === Ord.WRONG ? "X" : (this.s === Ord.MAYBE ? "?" : "O")), v: this.v };
+        return {c: this.c, s: (this.s === Ord.WRONG ? "X" : (this.s === Ord.MAYBE ? "M" : "O")), v: this.v };
     }
 
     set_state(new_state) { this.s = new_state; }
