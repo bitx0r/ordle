@@ -1,5 +1,5 @@
 body {
-    background-color: rgb(19, 19, 19);
+    background-color: #3a3a3c;
     color: white;
     font-family:'Courier New', Courier, monospace;
     font-size:x-large;
@@ -10,6 +10,12 @@ body {
     position: absolute;
     top: 0;
     right: 0;
+}
+
+.floater {
+    position:fixed;
+    top: 1em;
+    right: 1em;
 }
 
 .keybx {
@@ -35,6 +41,7 @@ body {
     font-size: x-large;
     font-weight: bold;
     cursor: pointer;
+    text-transform: uppercase;
 }
 
 .widekey {
@@ -76,6 +83,7 @@ body {
     padding-bottom: 2px;
     border-color: white;
     margin: 5px 5px 5px 5px;
+    text-transform: uppercase;
 }
 
 .asciiguesschar {
@@ -130,12 +138,12 @@ body {
 }
 
 .M {
-    background-color: rgb(231, 191, 90);
+    background-color: #b59f3b;
     font-weight: bolder;
 }
 
 .O {
-    background-color: rgb(48, 177, 48);
+    background-color: #538d4e;
     font-weight: bolder;
 }
 
