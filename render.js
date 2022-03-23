@@ -88,7 +88,7 @@ class Renderer {
     }
 
     create_share_board(minrows, mincols) {
-        let board = "";
+        let board = new Array();
         //const maybe = "🟨";
         //const yes = "🟩";
         //const no = "⬛";
@@ -98,43 +98,78 @@ class Renderer {
         for (let i=0; i<this.rows; ++i) {
             for (let j=0; j<this.cols; ++j) {
                 const b = this.controllers[i][j].get_board();
+                const rowindex = i*minrows;
 
+                if (board[rowindex] === undefined) {
+                    board.push(new Array());
+                }
+
+                let rowcounter = 0;
                 for (const guess of b.board) {
                     // row
+                    let word = ""
                     for (let k = 0; k < mincols; ++k) {
                         // word
                         let c = guess.g[k];
             
                         if (c) {
                             if (c.s === "M") {
-                                board += maybe; // 🟨
+                                word += maybe; // 🟨
                             }
                             else if (c.s === "O") {
-                                board += yes; // 🟩
+                                word += yes; // 🟩
                             }
                             else {
-                                board += no; // ⬛
+                                word += no; // ⬛
                             }
                         }
                         else {
-                            board += no; // ⬛
+                            word += no; // ⬛
                         }
                     }
-                    board += "\r"
+
+                    if (board[rowindex+rowcounter] === undefined) {
+                        board.push(new Array());
+                    }
+    
+                    board[rowindex+rowcounter].push(word);
+                    rowcounter++;
                 }
             
                 for (let k = 0; k < minrows - b.board.length; ++k)
                 {
+                    let word = ""
                     for (let l = 0; l < mincols; ++l) {
                         // word
-                        board += no; // ⬛
+                        word += no; // ⬛
                     }
-                    board += "\r"
+
+                    if (board[rowindex+rowcounter] === undefined) {
+                        board.push(new Array());
+                    }
+
+                    board[rowindex+rowcounter].push(word);
+                    rowcounter++;
                 }
             }
         }
 
-        return board;
+        let textboard = "";
+        let rowcounter = 1;
+        for (const row of board) {
+            for (const col of row) {
+                textboard += col;
+                textboard += " ";
+            }
+            textboard += '\r';
+            if (rowcounter == minrows) {
+                textboard += '\r';
+                rowcounter = 0;
+            }
+            rowcounter++;
+        }
+
+        return textboard;
     }
 
     create_board(nochar, charclass, rowclass, minrows, mincols, board) {
@@ -322,11 +357,12 @@ class Renderer {
     {
         let w = document.createElement("div");
         w.classList.add("finalresults");
-        w.innerHTML = "You won " + this.win_count() + "/" + this.numboards;
+        let wins = this.win_count();
+        w.innerHTML = "You won " + wins + "/" + this.numboards;
         document.body.appendChild(w);
 
         let shareboard = this.create_share_board(this.maxguesses, this.wordlen);
-        this.copy_results(shareboard);
+        this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
     }
 
     async redraw()
@@ -344,7 +380,7 @@ class Renderer {
         }
 
         let stats = document.getElementById("stats");
-        stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses;
+        stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses + "<br>" + Object.keys(this.dones).length + "/" + this.numboards;
 
         if (Object.keys(this.dones).length === this.numboards)
         {
