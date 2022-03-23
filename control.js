@@ -59,6 +59,10 @@ class Controller {
                 this.ordle.submit_guess(this.word);
                 this.update_keyboard(this.word);
                 this.word = "";
+
+                if (this.ordle.is_done()) {
+                    this.on_done(this.gameid, this.ordle.is_winner());
+                }
             }
         }
 

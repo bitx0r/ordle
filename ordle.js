@@ -83,7 +83,7 @@ class Ordle {
             let e = c.toJsonObj();
             g.push(e);
         }
-        return {board: g, done: this.is_done(), winner: this.is_winner() };
+        return {board: g, done: this.is_done(), winner: this.is_winner(), word: this.word };
     }
 
     char_state(char, index) {

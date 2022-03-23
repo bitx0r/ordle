@@ -20,7 +20,7 @@ async function word_picker() {
     const word = usable_words[i];
     console.log ("game " + game_counter + " word is " + word);
     game_counter++;
-    return word;
+    return {gameid: datenum, word: word};
 }
 
 let renderer;

@@ -11,11 +11,30 @@ class Renderer {
         this.word_picker = word_picker;
         this.word_validator = word_validator;
         this.update_keyboard = update_keyboard;
-        this.set_regular_mode();
+        this.is_done = false;
+        this.datekey = this.get_date_key();
+        this.wordlen = 0;
 
-        if (asciimode) {
+        const laststate = window.localStorage.getItem("laststate");
+        if (laststate && laststate.length) {
+            this.laststate = JSON.parse(laststate);
+        }
+
+        const savedMode = window.localStorage.getItem("view");
+
+        if (savedMode === "ascii") {
             this.set_ascii_mode()
-         }
+        }
+        else if (savedMode === "regular") {
+            this.set_regular_mode();    
+        }
+        else {
+            this.set_regular_mode();
+
+            if (asciimode) {
+                this.set_ascii_mode()
+            }
+        }
 
         document.addEventListener("keyup", (e)=> this.on_input(e));
     }
@@ -34,6 +53,7 @@ class Renderer {
         this.resultcharclass = "asciiresultchar";
         this.resultrowclass = "asciiresultrow";
         this.showcursor = true;
+        window.localStorage.setItem("view", "ascii");
     }
     ascii_mode() {
         this.set_ascii_mode();
@@ -46,6 +66,7 @@ class Renderer {
         this.resultcharclass = "resultchar";
         this.resultrowclass = "resultrow";
         this.showcursor = false;
+        window.localStorage.setItem("view", "regular");
     }
 
     regular_mode() {
@@ -66,28 +87,56 @@ class Renderer {
         }    
     }
 
-    copy_results() {
-        var copyText = document.body.getElementsByClassName("resultwindow")[0].innerHTML;
-      
-        let t = document.createElement("textarea");
-        t.innerHTML = copyText;
-        t.select();
-        navigator.clipboard.writeText(t.value);
-      
-        /* Alert the copied text */
-        alert("Copied the text: " + copyText.value);
-    }
-    
-    on_done(gameid, winner) {
-        console.log(winner ? "You win game " + gameid + "!" : "Lose game "+ gameid + ".");
-        this.dones[gameid] = winner;
-    
-        if (Object.keys(this.dones).length === this.numboards)
-        {
-            //show_results();
+    create_share_board(minrows, mincols) {
+        let board = "";
+        //const maybe = "🟨";
+        //const yes = "🟩";
+        //const no = "⬛";
+        const maybe = "&#x1f7e8;";
+        const yes = "&#x1f7e9;";
+        const no = "&#11035;";
+        for (let i=0; i<this.rows; ++i) {
+            for (let j=0; j<this.cols; ++j) {
+                const b = this.controllers[i][j].get_board();
+
+                for (const guess of b.board) {
+                    // row
+                    for (let k = 0; k < mincols; ++k) {
+                        // word
+                        let c = guess.g[k];
+            
+                        if (c) {
+                            if (c.s === "M") {
+                                board += maybe; // 🟨
+                            }
+                            else if (c.s === "O") {
+                                board += yes; // 🟩
+                            }
+                            else {
+                                board += no; // ⬛
+                            }
+                        }
+                        else {
+                            board += no; // ⬛
+                        }
+                    }
+                    board += "\r"
+                }
+            
+                for (let k = 0; k < minrows - b.board.length; ++k)
+                {
+                    for (let l = 0; l < mincols; ++l) {
+                        // word
+                        board += no; // ⬛
+                    }
+                    board += "\r"
+                }
+            }
         }
+
+        return board;
     }
-    
+
     create_board(nochar, charclass, rowclass, minrows, mincols, board) {
         let root = document.createElement("div");
         if (board.winner) {
@@ -115,7 +164,16 @@ class Renderer {
                     }
     
                     if (!nochar) { 
-                        l.innerHTML = c.c.length ? c.c : "&nbsp;"
+                        l.innerHTML = c.c.length ? c.c : "&nbsp;";
+                    }
+                    else if (c.s === "M") {
+                        l.innerHTML = "&#x1f7e8;";
+                    }
+                    else if (c.s === "O") {
+                        l.innerHTML = "&#x1f7e9;";
+                    }
+                    else {
+                        l.innerHTML = "&#11035;";
                     }
                 }
                 else {
@@ -125,7 +183,11 @@ class Renderer {
                         l.classList.add(charclass+"cursor");
                     }
 
-                    l.innerHTML = "&nbsp;";
+                    if (!nochar) { 
+                        l.innerHTML = "&nbsp;";
+                    } else {
+                        l.innerHTML = "&#11035;";
+                    }
                 }
     
                 r.appendChild(l);
@@ -144,12 +206,17 @@ class Renderer {
     
                 l.classList.add(charclass);
                 l.classList.add("X");
-                l.innerHTML = "&nbsp;";
+                if (!nochar) { 
+                    l.innerHTML = "&nbsp;";
+                } else {
+                    l.innerHTML = "&#11035;";
+                }
+
                 r.appendChild(l);
             }
             root.appendChild(r);
         }
-    
+
         return root;
     }
     
@@ -180,9 +247,10 @@ class Renderer {
                 game.id = colclass + (i*cols + j);
                 boards.appendChild(game);
             }
-    
+
             a.appendChild(boards);
         }
+
         return a;
     }
     
@@ -197,27 +265,99 @@ class Renderer {
         resultwindow.appendChild(r);
     }
     
-    
-    async new_game(i) {
-        const word = await this.word_picker();
-    
-        let controller = new Controller(i, (k) => { return this.charset.includes(k); }, word, this.maxguesses, this.word_validator, this.on_done, this.update_keyboard);
-        return controller;
-    }
-    
-    async redraw()
+    get_date_key()
     {
+        const d = new Date();
+        const datestr = "" + d.getUTCFullYear() + "" + d.getUTCMonth() + "" + d.getUTCDate();
+        return datestr;
+    }
+
+    save_done() {
+        const state = { date: this.datekey, is_done: this.is_done, boards: [] };
+
         for (let i=0; i < this.rows; ++i)
         {
             for (let j=0; j < this.cols; ++j ) {
                 let b = this.controllers[i][j].get_board();
+                let id = this.controllers[i][j].get_id();
+                state.boards.push({ gameid: id , board: b });
+            }
+        }
+
+        window.localStorage.setItem("laststate", JSON.stringify(state));
+    }
+    
+    async new_game(i) {
+        const wordobj = await this.word_picker();
+        const { gameid, word } = wordobj;
+        this.wordlen = word.length;
+    
+        let controller = new Controller(gameid, (k) => { return this.charset.includes(k); }, word, this.maxguesses, (w) => {return this.word_validator(w)}, (i,w) => { this.on_done(i,w); }, this.update_keyboard);
+        return controller;
+    }
+
+
+    copy_results(copyText) {
+        let t = document.createElement("textarea");
+        t.innerHTML = copyText;
+        navigator.clipboard.writeText(t.value)
+        .then(success => {alert("Copied!"); console.log("text copied");}, err => console.log("error copying text : " + err) )
+        .catch(err => { console.log(err) });
+    }
+    
+    on_done(gameid, winner) {
+        console.log(winner ? "You win game " + gameid + "!" : "Lose game "+ gameid + ".");
+        this.dones[gameid.toString()] = winner;
+    }
+    
+    win_count() {
+        let wins = 0;
+        for (const d of Object.keys(this.dones)) {
+            if (this.dones[d]) { wins++; }
+        }
+        return wins;
+    }
+
+    show_final_results()
+    {
+        let w = document.createElement("div");
+        w.classList.add("finalresults");
+        w.innerHTML = "You won " + this.win_count() + "/" + this.numboards;
+        document.body.appendChild(w);
+
+        let shareboard = this.create_share_board(this.maxguesses, this.wordlen);
+        this.copy_results(shareboard);
+    }
+
+    async redraw()
+    {
+        let guessnumber = 0;
+        for (let i=0; i < this.rows; ++i)
+        {
+            for (let j=0; j < this.cols; ++j ) {
+                let b = this.controllers[i][j].get_board();
+                if (guessnumber < b.board.length) {
+                    guessnumber = b.board.length;
+                }
                 this.on_draw(i*this.cols + j, this.maxguesses, WORDLEN, b);
             }
+        }
+
+        let stats = document.getElementById("stats");
+        stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses;
+
+        if (Object.keys(this.dones).length === this.numboards)
+        {
+            this.is_done = true;
+            this.show_final_results();
+            this.save_done();
         }
     }
     
     async on_input(ev)
     {
+        if (this.is_done) { return; }
+
         if (ev.ctrlKey && ev.shiftKey && ev.key === " ") {
             this.toggle_mode();
             return;
