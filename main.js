@@ -36,8 +36,8 @@ async function on_load(r, c) {
             if (isNum(qr)) {
                 return Number.parseInt(qr);
             }
-            return or_value;
-        }    
+        }
+        return or_value;
     };
 
     rows = getNumParam("r", rows);
