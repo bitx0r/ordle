@@ -11,7 +11,8 @@ function word_validator(word) {
 let game_counter = 0;
 async function word_picker() {
     const d = new Date();
-    const datenum = ((d.getUTCFullYear()*100000) + (d.getUTCMonth()*1000) + (d.getUTCDate()*10) + (game_counter)).toString();
+    const zeroPad = (num) => num.toString().padStart(2, '0');
+    const datenum = d.getUTCFullYear().toString() + zeroPad(d.getUTCMonth()) + zeroPad(d.getUTCDate()) + zeroPad(game_counter);
     const data = new TextEncoder().encode(datenum);
     const digest = await window.crypto.subtle.digest('SHA-256', data.buffer);
     const dv = new DataView(digest);

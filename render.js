@@ -31,6 +31,8 @@ class Renderer {
             }
         }
 
+        this.clean_up_old(this.datekey);
+
         document.addEventListener("keyup", (e)=> this.on_input(e));
     }
 
@@ -67,6 +69,25 @@ class Renderer {
     regular_mode() {
         this.set_regular_mode();
         this.redraw();
+    }
+
+    clean_up_old(datekey) {
+        const mindate = Number.parseInt(datekey + "00");
+        const isNum = (s) => { return Number.isInteger(s) || /^[0-9]+$/.test(s); };
+
+        let to_delete = new Array();
+        for (let i = 0; i < window.localStorage.length; ++i) {
+            const k = window.localStorage.key(i);
+            if (k) {
+                if (isNum(k) && Number.parseInt(k) < mindate) {
+                    to_delete.push(k);
+                }
+            }
+        }
+
+        for (const k of to_delete) {
+            window.localStorage.removeItem(k);
+        }
     }
 
     async create_games()
@@ -298,7 +319,8 @@ class Renderer {
     get_date_key()
     {
         const d = new Date();
-        const datestr = "" + d.getUTCFullYear() + "" + d.getUTCMonth() + "" + d.getUTCDate();
+        const zeroPad = (num) => num.toString().padStart(2, '0');
+        const datestr = d.getUTCFullYear().toString() + zeroPad(d.getUTCMonth()) + zeroPad(d.getUTCDate());
         return datestr;
     }
    
