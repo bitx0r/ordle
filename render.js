@@ -338,11 +338,14 @@ class Renderer {
         let w = document.createElement("div");
         w.classList.add("finalresults");
         let wins = this.win_count();
-        w.innerHTML = "You won " + wins + "/" + this.numboards;
-        document.body.appendChild(w);
-
+        w.innerHTML = "You won " + wins + "/" + this.numboards + "<BR/><BR/>";
+        let button = document.createElement("a");
+        button.innerHTML = "[&nbsp;SHARE&nbsp;]";
         let shareboard = this.create_share_board(this.maxguesses, this.wordlen);
-        this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
+        button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
+        button.style.cursor = "pointer";
+        w.appendChild(button);
+        document.body.appendChild(w);
     }
 
     async redraw()
