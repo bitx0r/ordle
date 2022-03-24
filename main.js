@@ -26,13 +26,8 @@ async function word_picker() {
 let renderer;
 async function on_load(r, c) {
     maxguesses = r*c + MAXERRORS;
-    renderer = new Renderer(r, c, true, maxguesses, ALPHACHARS, word_picker, word_validator, update_keyboard);
-    
     load_keyb(ALPHACHARS);
 
-    renderer.setup_areas();
-
-    await renderer.create_games();
-
-    renderer.redraw();
+    renderer = new Renderer(r, c, true, maxguesses, ALPHACHARS, word_picker, word_validator, update_keyboard);
+    renderer.start();
 }

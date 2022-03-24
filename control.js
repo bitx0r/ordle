@@ -1,10 +1,9 @@
 class Controller {
     constructor(gameid, valid_char, word, maxguesses, valid_word, on_done, update_keyboard) {
         this.gameid = gameid;
-        this.ordle = new Ordle(word, maxguesses);
         this.word = "";
         this.minlength = word.length;
-        this.guess = new Guess("", this.minlength);
+        this.guess = new Guess("");
 
         if (valid_char instanceof Function) {
             this.valid_char = valid_char;
@@ -27,13 +26,19 @@ class Controller {
             this.on_done = (x) => { return true; };
         }
 
-        if (update_keyboard instanceof Function) {
-            this.update_keyboard = update_keyboard;
+        // reload game if present
+        const saved = window.localStorage.getItem(gameid);
+        if (saved) {
+            this.ordle = new Ordle('', 0, update_keyboard, JSON.parse(saved));
+            this.signal_if_done();
         }
         else {
-            this.update_keyboard = (x) => { };
+            this.ordle = new Ordle(word, maxguesses, update_keyboard);
         }
+    }
 
+    save_game() {
+        window.localStorage.setItem(this.gameid, JSON.stringify(this.ordle.toJsonObj()))
     }
 
     get_id() { return this.gameid; }
@@ -46,6 +51,12 @@ class Controller {
         }
         return x;
     }
+
+    signal_if_done() {
+        if (this.ordle.is_done()) {
+            this.on_done(this.gameid, this.ordle.is_winner());
+        }
+    }
   
     on_input(e)
     {
@@ -57,12 +68,9 @@ class Controller {
         if (e.key === "Enter") {
             if (this.valid_word(this.word)) {
                 this.ordle.submit_guess(this.word);
-                this.update_keyboard(this.word);
+                this.save_game();
                 this.word = "";
-
-                if (this.ordle.is_done()) {
-                    this.on_done(this.gameid, this.ordle.is_winner());
-                }
+                this.signal_if_done();
             }
         }
 
@@ -75,7 +83,7 @@ class Controller {
             this.word = this.word.concat(e.key);
         }
 
-        this.guess = new Guess(this.word, this.minlength);
+        this.guess = new Guess(this.word);
         if (this.guess.length() === this.minlength && !this.valid_word(this.word)) {
             this.guess.set_invalid();
         }

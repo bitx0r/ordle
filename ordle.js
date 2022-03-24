@@ -3,10 +3,16 @@ class Ord {
     static CORRECT = 1;
     static MAYBE = 2;
     
-    constructor(char, state) {
+    constructor(char, state, saved = {}) {
         this.c = char;
         this.s = state;
         this.v = true;
+
+        if (Object.keys(saved).length !== 0) {
+            this.c = saved.c;
+            this.s = (saved.s === "X" ? Ord.WRONG : (saved.s === "M" ? Ord.MAYBE : Ord.CORRECT));
+            this.v = saved.v;
+        }
     }
 
     toJsonObj() {
@@ -15,17 +21,27 @@ class Ord {
 
     set_state(new_state) { this.s = new_state; }
     set_invalid() { this.v = false; }
+    get_char() { return this.c; }
 }
 
 class Guess {
-    constructor(word, minlength) {
+    constructor(word, saved = {}) {
         this.guess = new Array();
         this.word = word;
-        this.minlength = minlength;
 
-        for (let i = 0; i < word.length; ++i) {
-            this.guess.push(new Ord(word.charAt(i), Ord.WRONG));
+        if (Object.keys(saved).length === 0) {
+            for (let i = 0; i < word.length; ++i) {
+                this.guess.push(new Ord(word.charAt(i), Ord.WRONG));
+            }
+            return;
         }
+
+        this.word = "";
+        for (const c of saved.g) {
+            const o = new Ord('', Ord.WRONG, c);
+            this.guess.push(o);
+            this.word += o.get_char();
+        }        
     }
 
     toJsonObj() {
@@ -51,13 +67,17 @@ class Guess {
     length() {
         return this.guess.length;
     }
+
+    get_word() {
+        return this.word;
+    }
 }
 
 class Ordle {
     static INPROGRESS = 0;
     static DONE = 1;
 
-    constructor(theword, numguess) {
+    constructor(theword, numguess, update_keyboard, saved = {}) {
         this.word = theword;
         this.maxguesses = numguess;
         this.guesses = new Array();
@@ -65,6 +85,34 @@ class Ordle {
         this.game_state = Ordle.INPROGRESS;
         this.winner = false;
 
+        if (update_keyboard instanceof Function) {
+            this.update_keyboard = update_keyboard;
+        }
+        else {
+            this.update_keyboard = (x) => { };
+        }
+
+        if (Object.keys(saved).length === 0) {
+            this.build_dict(theword);
+            return;
+        }
+
+        // reload state
+        this.word = saved.word;
+        this.winner = saved.winner;
+        this.maxguesses = saved.maxguesses;
+        this.guess_index = saved.gi;
+        this.game_state = saved.state;
+        for (const g of saved.board) {
+            const guess = new Guess('', g);
+            this.guesses.push(guess);
+            this.update_keyboard(guess.get_word());
+        }
+        
+        this.build_dict(this.word);
+    }
+
+    build_dict(theword) {
         this.dict = {}
         for (let i=0; i < theword.length; ++i) {
             const c = theword.charAt(i);
@@ -83,7 +131,7 @@ class Ordle {
             let e = c.toJsonObj();
             g.push(e);
         }
-        return {board: g, done: this.is_done(), winner: this.is_winner(), word: this.word };
+        return {board: g, done: this.is_done(), winner: this.is_winner(), word: this.word, maxguesses: this.maxguesses, gi: this.guess_index, state: this.game_state };
     }
 
     char_state(char, index) {
@@ -126,6 +174,8 @@ class Ordle {
             this.game_state = Ordle.DONE;
             this.winner = true;
         }
+
+        this.update_keyboard(word);
 
         ++this.guess_index;
 

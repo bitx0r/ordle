@@ -15,11 +15,6 @@ class Renderer {
         this.datekey = this.get_date_key();
         this.wordlen = 0;
 
-        const laststate = window.localStorage.getItem("laststate");
-        if (laststate && laststate.length) {
-            this.laststate = JSON.parse(laststate);
-        }
-
         const savedMode = window.localStorage.getItem("view");
 
         if (savedMode === "ascii") {
@@ -306,22 +301,7 @@ class Renderer {
         const datestr = "" + d.getUTCFullYear() + "" + d.getUTCMonth() + "" + d.getUTCDate();
         return datestr;
     }
-
-    save_done() {
-        const state = { date: this.datekey, is_done: this.is_done, boards: [] };
-
-        for (let i=0; i < this.rows; ++i)
-        {
-            for (let j=0; j < this.cols; ++j ) {
-                let b = this.controllers[i][j].get_board();
-                let id = this.controllers[i][j].get_id();
-                state.boards.push({ gameid: id , board: b });
-            }
-        }
-
-        window.localStorage.setItem("laststate", JSON.stringify(state));
-    }
-    
+   
     async new_game(i) {
         const wordobj = await this.word_picker();
         const { gameid, word } = wordobj;
@@ -386,7 +366,6 @@ class Renderer {
         {
             this.is_done = true;
             this.show_final_results();
-            this.save_done();
         }
     }
     
@@ -407,6 +386,14 @@ class Renderer {
         }
     
         this.redraw();
+    }
+
+    async start() {
+        renderer.setup_areas();
+
+        await renderer.create_games();
+    
+        renderer.redraw();    
     }
     
 }
