@@ -26,9 +26,26 @@ async function word_picker() {
 
 let renderer;
 async function on_load(r, c) {
-    maxguesses = r*c + MAXERRORS;
+    let rows = r;
+    let cols = c;
+    const isNum = (s) => { return Number.isInteger(s) || /^[0-9]+$/.test(s); };
+    const params = new URLSearchParams(window.location.search);
+    const getNumParam = (k, or_value) => {
+        if (params.has(k)) {
+            const qr = params.get(k);
+            if (isNum(qr)) {
+                return Number.parseInt(qr);
+            }
+            return or_value;
+        }    
+    };
+
+    rows = getNumParam("r", rows);
+    cols = getNumParam("c", cols);
+
+    maxguesses = rows*cols + MAXERRORS;
     load_keyb(ALPHACHARS);
 
-    renderer = new Renderer(r, c, true, maxguesses, ALPHACHARS, word_picker, word_validator, update_keyboard);
+    renderer = new Renderer(rows, cols, true, maxguesses, ALPHACHARS, word_picker, word_validator, update_keyboard);
     renderer.start();
 }
