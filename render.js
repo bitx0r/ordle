@@ -124,7 +124,7 @@ class Renderer {
                 }
 
                 if (!b.winner) {
-                    board[i].push(wrong+spc);
+                    board[i].push(wrong+wrong+spc);
                     continue;
                 }
 
@@ -412,7 +412,7 @@ class Renderer {
         else {
             shareboard = this.create_share_board(this.maxguesses, this.wordlen);
         } 
-        
+
         button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
         button.style.cursor = "pointer";
         w.appendChild(button);
