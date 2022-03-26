@@ -105,12 +105,10 @@ class Renderer {
 
     create_small_share_board() {
         let board = new Array();
-        //const maybe = "🟨";
-        //const yes = "🟩";
-        //const no = "⬛";
         const wrong = "&#128997;";
         const numbers = ["&#48;&#65039;&#8419;","&#49;&#65039;&#8419;","&#50;&#65039;&#8419;","&#51;&#65039;&#8419;","&#52;&#65039;&#8419;","&#53;&#65039;&#8419;","&#54;&#65039;&#8419;","&#55;&#65039;&#8419;","&#56;&#65039;&#8419;","&#57;&#65039;&#8419;"];
         const spacer = "&#11035;";
+
         for (let i=0; i<this.rows; ++i) {
             for (let j=0; j<this.cols; ++j) {
                 const b = this.controllers[i][j].get_board();
@@ -138,7 +136,7 @@ class Renderer {
             for (const col of row) {
                 textboard += col;
             }
-            textboard += '\r';
+            textboard += '\n';
         }
 
         return textboard;        
@@ -218,9 +216,9 @@ class Renderer {
                 textboard += col;
                 textboard += " ";
             }
-            textboard += '\r';
+            textboard += '\n';
             if (rowcounter == minrows) {
-                textboard += '\r';
+                textboard += '\n';
                 rowcounter = 0;
             }
             rowcounter++;
