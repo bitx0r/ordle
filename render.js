@@ -411,9 +411,11 @@ class Renderer {
         }
         else {
             shareboard = this.create_share_board(this.maxguesses, this.wordlen);
-        } 
+        }
 
-        button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
+        shareboard += "\n\nxOrdle " + window.location.toString();
+
+        button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\n\n" + shareboard);
         button.style.cursor = "pointer";
         w.appendChild(button);
         document.body.appendChild(w);
