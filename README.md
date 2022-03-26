@@ -1,4 +1,9 @@
-Hey try play xOrdle, go here: https://bitx0r.github.io/ordle/
+To play xOrdle, go here: https://bitx0r.github.io/ordle/
 
-This is what a JavaScript game looks like when a C++ developer writes it.
+You can change the number of games at once by changing the url.
+For example:
+
+2x2 https://bitx0r.github.io/ordle/index.html?r=2&c=2
+2x8 https://bitx0r.github.io/ordle/index.html?r=8&c=2
+
 
