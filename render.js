@@ -103,6 +103,47 @@ class Renderer {
         }    
     }
 
+    create_small_share_board() {
+        let board = new Array();
+        //const maybe = "🟨";
+        //const yes = "🟩";
+        //const no = "⬛";
+        const wrong = "&#128997;";
+        const numbers = ["&#48;&#65039;&#8419;","&#49;&#65039;&#8419;","&#50;&#65039;&#8419;","&#51;&#65039;&#8419;","&#52;&#65039;&#8419;","&#53;&#65039;&#8419;","&#54;&#65039;&#8419;","&#55;&#65039;&#8419;","&#56;&#65039;&#8419;","&#57;&#65039;&#8419;"];
+        const spacer = "&#11035;";
+        for (let i=0; i<this.rows; ++i) {
+            for (let j=0; j<this.cols; ++j) {
+                const b = this.controllers[i][j].get_board();
+                if (board[i] === undefined) {
+                    board.push(new Array());
+                }
+
+                let spc = "";
+                if (j < this.cols-1) {
+                    spc = spacer;
+                }
+
+                if (!b.winner) {
+                    board[i].push(wrong+spc);
+                    continue;
+                }
+
+                let guesses = numbers[Math.trunc(b.gi/10)] + numbers[b.gi % 10];
+                board[i].push(guesses+spc);
+            }
+        }
+
+        let textboard = "";
+        for (const row of board) {
+            for (const col of row) {
+                textboard += col;
+            }
+            textboard += '\r';
+        }
+
+        return textboard;        
+    }
+
     create_share_board(minrows, mincols) {
         let board = new Array();
         //const maybe = "🟨";
@@ -363,7 +404,15 @@ class Renderer {
         w.innerHTML = "You won " + wins + "/" + this.numboards + "<BR/><BR/>";
         let button = document.createElement("a");
         button.innerHTML = "[&nbsp;SHARE&nbsp;]";
-        let shareboard = this.create_share_board(this.maxguesses, this.wordlen);
+
+        let shareboard = "";
+        if (this.rows > 2) {
+            shareboard = this.create_small_share_board();
+        }
+        else {
+            shareboard = this.create_share_board(this.maxguesses, this.wordlen);
+        } 
+        
         button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\r\r" + shareboard);
         button.style.cursor = "pointer";
         w.appendChild(button);
