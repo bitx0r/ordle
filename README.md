@@ -1,3 +1,5 @@
+**This is best played on a desktop browser.**
+
 To play xOrdle, go here: https://bitx0r.github.io/ordle/
 
 You can change the number of games at once by changing the url.
@@ -8,4 +10,4 @@ For example:
 
 2x8 https://bitx0r.github.io/ordle/index.html?r=8&c=2
 
-
+Not well tested beyond 3x3.
