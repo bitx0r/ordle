@@ -406,7 +406,7 @@ class Renderer {
         button.innerHTML = "[&nbsp;SHARE&nbsp;]";
 
         let shareboard = "";
-        if (this.rows > 2) {
+        if (this.rows > 2 || this.cols > 2) {
             shareboard = this.create_small_share_board();
         }
         else {
