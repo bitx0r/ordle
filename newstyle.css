@@ -194,16 +194,26 @@ li {
     text-transform: uppercase;
 }
 
-@media only screen and (min-resolution: 120dpi) and (max-width: 1000px)  {
-    .key {
-        font-size: small;
-    }
-}
-
 .widekey {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
 }
+
+@media only screen and (min-resolution: 120dpi) and (max-width: 1000px)  {
+    .key {
+        font-size: medium;
+        width: 10vw;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .widekey {
+        width: 14vw;
+        padding-left: .5rem;
+        padding-right: .5rem;
+    }
+}
+
 
 
 /* Characters */

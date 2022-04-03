@@ -517,7 +517,7 @@ class Renderer {
 
         await renderer.create_games();
     
-        renderer.redraw();    
+        renderer.redraw();
     }
     
 }
