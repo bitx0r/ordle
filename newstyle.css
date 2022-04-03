@@ -133,8 +133,8 @@ li {
 @media screen and (max-width: 1557px) {
     .floater {
         position: fixed;
-        bottom: 0;
-        left: 0;
+        bottom: 0vh;
+        left: 0vw;
         width: 100%;
         background-color: #3a3a3c;
     }
@@ -145,8 +145,8 @@ li {
 
 @media screen and (min-width: 1558px)  {
     .floater {
-        top: 1em;
-        right: 1em;
+        top: 1rem;
+        right: 1rem;
         float: right;
         position:fixed;
     }
@@ -203,8 +203,11 @@ li {
     .key {
         font-size: medium;
         width: 10vw;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+        text-align: center;
     }
 
     .widekey {
