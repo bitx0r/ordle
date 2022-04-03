@@ -50,6 +50,8 @@ class Renderer {
         this.resultcharclass = "asciiresultchar";
         this.resultrowclass = "asciiresultrow";
         this.showcursor = true;
+        let display_toggle = document.getElementById("display_toggle");
+        display_toggle.innerHTML = "Grid View";
         window.localStorage.setItem("view", "ascii");
     }
     ascii_mode() {
@@ -63,6 +65,8 @@ class Renderer {
         this.resultcharclass = "resultchar";
         this.resultrowclass = "resultrow";
         this.showcursor = false;
+        let display_toggle = document.getElementById("display_toggle");
+        display_toggle.innerHTML = "Console View";
         window.localStorage.setItem("view", "regular");
     }
 
@@ -227,10 +231,10 @@ class Renderer {
         return textboard;
     }
 
-    create_board(nochar, charclass, rowclass, minrows, mincols, board) {
-        let root = document.createElement("div");
+    create_board(parent, nochar, charclass, rowclass, minrows, mincols, board) {
+
         if (board.winner) {
-            root.classList.add("win");
+            parent.classList.add("win");
         }
     
         for (const guess of board.board) {
@@ -282,7 +286,7 @@ class Renderer {
     
                 r.appendChild(l);
             }
-            root.appendChild(r);
+            parent.appendChild(r);
         }
     
         for (let i = 0; i < minrows - board.board.length; ++i)
@@ -304,10 +308,8 @@ class Renderer {
 
                 r.appendChild(l);
             }
-            root.appendChild(r);
+            parent.appendChild(r);
         }
-
-        return root;
     }
     
     on_draw(gameid, minrows, mincols, board) {
@@ -316,43 +318,30 @@ class Renderer {
         root.innerHTML = "";
         resultroot.innerHTML = "";
     
-        let b = this.create_board(false, this.guesscharclass, this.guessrowclass, minrows, mincols, board);
-        let r = this.create_board(true, this.resultcharclass, this.resultrowclass, minrows, mincols, board);
-    
-        root.appendChild(b);
-        resultroot.appendChild(r);
+        this.create_board(root, false, this.guesscharclass, this.guessrowclass, minrows, mincols, board);
+        this.create_board(resultroot, true, this.resultcharclass, this.resultrowclass, minrows, mincols, board);
     }
     
-    create_area(rows, cols, rowclass, colclass) {
-        let a = document.createElement("span");
-    
+    create_area(parent, rows, cols, style) {
         for (let i=0; i < rows; ++i) {
-            let boards = document.createElement("div");
-            boards.classList.add(rowclass);
-            boards.id = rowclass + "row" + i;
-    
             for( let j=0; j < cols; ++j) {
-                let game = document.createElement("span");
-                game.classList.add(colclass);
-                game.id = colclass + (i*cols + j);
-                boards.appendChild(game);
+                let game = document.createElement("div");
+                game.classList.add(style);
+                game.id = style + (i*cols + j);
+                parent.appendChild(game);
             }
-
-            a.appendChild(boards);
         }
-
-        return a;
     }
     
     setup_areas() {
         let boardarea = document.body.getElementsByClassName("boardarea")[0];
         let resultwindow = document.body.getElementsByClassName("resultwindow")[0];
     
-        let b = this.create_area(this.rows, this.cols, "boards", "game");
-        let r = this.create_area(this.rows, this.cols, "resultboards", "resultgame");
-    
-        boardarea.appendChild(b);
-        resultwindow.appendChild(r);
+        this.create_area(boardarea, this.rows, this.cols, "game");
+        this.create_area(resultwindow, this.rows, this.cols, "resultgame");
+
+        let display_toggle = document.getElementById("display_toggle");
+        display_toggle.onclick = () => this.toggle_mode();
     }
     
     get_date_key()
@@ -394,14 +383,68 @@ class Renderer {
         return wins;
     }
 
+    next_game_time() {
+        const zeroPad = (num) => num.toString().padStart(2, '0');
+
+        // time to next game
+        let tomorrow = new Date();
+        const now = new Date();
+        tomorrow.setUTCDate(now.getUTCDate() + 1);
+        tomorrow.setUTCHours(0,0,0,0);
+        const difftime = new Date(tomorrow - now);
+        const time_to_tomorrow = difftime.getUTCHours().toString() +"h "+ zeroPad(difftime.getUTCMinutes()) +"m "+ zeroPad(difftime.getUTCSeconds()) + "s";
+
+        return time_to_tomorrow;
+    }
+
+    correct_word_grid() {
+        let board = new Array();
+
+        for (let i=0; i<this.rows; ++i) {
+            for (let j=0; j<this.cols; ++j) {
+                const b = this.controllers[i][j].get_board();
+                if (board[i] === undefined) {
+                    board.push(new Array());
+                }
+                board[i].push(b.word);
+            }
+        }
+
+        let textboard = "";
+        for (const row of board) {
+            for (const col of row) {
+                textboard += col + "&nbsp;";
+            }
+            textboard += '<br/>';
+        }
+
+        return textboard;
+    }
+
     show_final_results()
     {
-        let w = document.createElement("div");
+        let w = document.getElementById("finalresults");
+        w.innerHTML = "";
         w.classList.add("finalresults");
+
+        // top results message
+        let top_content = document.createElement("p");
         let wins = this.win_count();
-        w.innerHTML = "You won " + wins + "/" + this.numboards + "<BR/><BR/>";
-        let button = document.createElement("a");
-        button.innerHTML = "[&nbsp;SHARE&nbsp;]";
+        if (wins === this.numboards) {
+            top_content.innerHTML = "You won! " + wins + " correct!";
+        }
+        else if (wins > 0) {
+            top_content.innerHTML = "You got " + wins + " of "+ this.numboards +" correct!";
+        }
+        else {
+            top_content.innerHTML = "You didn't get any right. How?";
+        }
+        w.appendChild(top_content);
+
+        // share button
+        let button = document.createElement("a");        
+        const time_to_tomorrow = this.next_game_time();
+        button.innerHTML = "[&nbsp;SHARE&nbsp;]"
 
         let shareboard = "";
         if (this.rows > 2 || this.cols > 2) {
@@ -410,12 +453,18 @@ class Renderer {
         else {
             shareboard = this.create_share_board(this.maxguesses, this.wordlen);
         }
-
-        shareboard += "\n\nxOrdle " + window.location.toString();
-
-        button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\n\n" + shareboard);
+        button.onclick = () => this.copy_results("xOrdle " + wins + "/" + this.numboards + "\n" + shareboard + "\nxOrdle " + window.location.toString());
         button.style.cursor = "pointer";
         w.appendChild(button);
+
+        // bottom results content
+        let bottom_content = document.createElement("p");
+        const transformed_shareboard = shareboard.replaceAll("\n", "<br/>")
+        const correct_grid = this.correct_word_grid()
+        bottom_content.innerHTML = transformed_shareboard + "<br/>" + correct_grid + "<br/>Next game in " + time_to_tomorrow;
+        w.appendChild(bottom_content);
+
+        // update body
         document.body.appendChild(w);
     }
 
@@ -434,7 +483,8 @@ class Renderer {
         }
 
         let stats = document.getElementById("stats");
-        stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses + "<br>" + Object.keys(this.dones).length + "/" + this.numboards;
+        //stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses + "<br>" + Object.keys(this.dones).length + "/" + this.numboards;
+        stats.innerHTML = (this.maxguesses - guessnumber + 1) + " more turns. " + (this.numboards - Object.keys(this.dones).length) + " unsolved."
 
         if (Object.keys(this.dones).length === this.numboards)
         {

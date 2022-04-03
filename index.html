@@ -2,7 +2,7 @@
 <HEAD>
 <TITLE>xOrdle</TITLE>
 <meta http-equiv="Pragma" content="no-cache">
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="newstyle.css">
 <SCRIPT SRC="wordle_list.js"></SCRIPT>
 <SCRIPT SRC="ordle.js"></SCRIPT>
 <SCRIPT SRC="control.js"></SCRIPT>
@@ -13,12 +13,15 @@
 </HEAD>
 
 <BODY onload="on_load(3,3)">
-    <div class="boardarea"></div>
+    <span class="boardarea"></span>
     <div class="floater">
-        <div class="keyb"></div>
-        <br>Ctrl+Shift+Space to toggle display style
+        <div class="keybstats">
+            <div class="stats" id="stats"></div>
+            <div class="keyb"></div>
+            <div id="display_toggle">&nbsp;</div>
+        </div>
         <div class="resultwindow"></div>
-        <div class="stats" id="stats"></div>
     </div>
+    <div id="finalresults"></div>
 </BODY>
 </HTML>

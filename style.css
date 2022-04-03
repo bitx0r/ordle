@@ -1,3 +1,4 @@
+
 body {
     background-color: #3a3a3c;
     color: white;
@@ -6,23 +7,44 @@ body {
     font-weight: bolder;
 }
 
-.resultwindowx {
-    position: absolute;
-    top: 0;
-    right: 0;
-}
 
 .floater {
     position:fixed;
-    top: 1em;
-    right: 1em;
+    width: fit-content;
+    height: fit-content;
+    padding: 10px;
 }
 
-.keybx {
-    margin-top: 10px;
-    position: absolute;
-    bottom: 0;
-    right: 0;
+@media screen and (min-width: 1000px)  {
+    .floater {
+        top: 1em;
+        right: 1em;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .floater {
+        bottom: 1em;
+        left: 1em;
+        background: black;
+        position: sticky;
+        width: 100%;
+    }
+
+    .resultwindow {
+        display: none;
+    }        
+}
+
+.keyb {
+    display: inline;
+}
+
+.boardarea {
+    width: fit-content;
+    height: fit-content;
+    margin-right: 0;
+    display: inline-block;
 }
 
 .keybrow {
@@ -60,6 +82,7 @@ body {
     justify-content: left;
     margin-top: 0px;
     clear: both;
+    display: inline-flex;
 }
 
 .game {
@@ -117,18 +140,26 @@ body {
 .resultboards {
     margin-top: 0px;
     clear: both;
+    width: fit-content;
+    height: fit-content;
+}
+
+.resultwindow {
+    width: fit-content;
+    height: fit-content;
 }
 
 .finalresults {
     position:fixed;
     top: 40%;
     left: 40%;
-    width: 20%;
-    height: 15%;
+    width: fit-content;
+    height: fit-content;
     z-index: 10;
     background-color: black;
     border-width: 5px;
     border-color: white;
+    padding: 10px;
     text-align: center;
     vertical-align: middle;
 }
@@ -137,6 +168,8 @@ body {
     position:absolute;
     top: 0;
     left: 0;
+    padding-right: 1em;
+    clear: right;
 }
 
 .resultchar {
