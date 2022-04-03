@@ -471,8 +471,7 @@ class Renderer {
     async redraw()
     {
         let guessnumber = 0;
-        for (let i=0; i < this.rows; ++i)
-        {
+        for (let i=0; i < this.rows; ++i) {
             for (let j=0; j < this.cols; ++j ) {
                 let b = this.controllers[i][j].get_board();
                 if (guessnumber < b.board.length) {
@@ -484,7 +483,9 @@ class Renderer {
 
         let stats = document.getElementById("stats");
         //stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses + "<br>" + Object.keys(this.dones).length + "/" + this.numboards;
-        stats.innerHTML = (this.maxguesses - guessnumber + 1) + " more turns. " + (this.numboards - Object.keys(this.dones).length) + " unsolved."
+        const num_unsolved = this.numboards - Object.keys(this.dones).length;
+        stats.innerHTML = (this.maxguesses - guessnumber + (num_unsolved > 0 ? 1 : 0)) + " more turns. " + num_unsolved + " unsolved."
+
 
         if (Object.keys(this.dones).length === this.numboards)
         {
