@@ -36,6 +36,7 @@ li {
     --columns: 3; /* Redefine the number of columns */
     grid-template-columns: max-content max-content max-content;
     margin-bottom: 10rem;
+    overflow: auto;
 }
 
 .game {
@@ -50,6 +51,7 @@ li {
 }
 
 .guessrow {
+    margin: 0 0 0 0;
     white-space: nowrap;
 }
 
