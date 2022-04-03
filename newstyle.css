@@ -35,7 +35,7 @@ li {
     grid-gap: 0;
     --columns: 3; /* Redefine the number of columns */
     grid-template-columns: max-content max-content max-content;
-    margin-bottom: 10rem;
+    margin-bottom: 16rem;
     overflow: auto;
 }
 
@@ -207,8 +207,8 @@ li {
         width: 10vw;
         padding-left: 0.5rem;
         padding-right: 0.5rem;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
         text-align: center;
     }
 
