@@ -11,6 +11,13 @@ body {
     font-family:'Courier New', Courier, monospace;
     font-size:x-large;
     font-weight: bolder;
+    margin: .1rem
+}
+
+@media only screen and (min-resolution: 120dpi) and (max-width: 1000px)  {
+    body {
+        font-size: smaller;
+    }
 }
 
 ul {
@@ -25,14 +32,14 @@ li {
 
 .boardarea {
     display: grid;
-    grid-gap: 10px;
+    grid-gap: 0;
     --columns: 3; /* Redefine the number of columns */
     grid-template-columns: max-content max-content max-content;
     margin-bottom: 10rem;
 }
 
 .game {
-    margin: 10px 10px 10px 10px;
+    margin: .5rem .5rem .5rem .5rem;
     width:fit-content;
     height: fit-content;
     white-space: nowrap;
@@ -47,7 +54,7 @@ li {
 }
 
 .asciiguessrow {
-    margin: 10px 0px 10px 0px;
+    margin: .3rem 0 .3rem 0;
     white-space: nowrap;
 }
 
@@ -55,13 +62,13 @@ li {
 
 .resultwindow {
     display: grid;
-    grid-gap: 10px;
+    grid-gap: 0;
     --columns: 3; /* Redefine the number of columns */
     grid-template-columns: max-content max-content max-content;
 }
 
 .resultgame {
-    margin: 10px 10px 10px 10px;
+    margin: .2rem .2rem .2rem .2rem;
     display: inline-block;
 }
 
@@ -116,7 +123,7 @@ li {
     background-color: black;
     border-width: 5px;
     border-color: white;
-    padding: 10px;
+    padding: 1em;
     text-align: center;
     vertical-align: middle;
 }
@@ -158,7 +165,6 @@ li {
 /* keyboard */
 .keyb {
     display: block;
-    position: sticky;
     width: min-content;
     cursor: pointer;
 }
@@ -179,8 +185,8 @@ li {
 .key {
     border-style: solid;
     border-width: 1px;
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 1rem;
+    padding-right: 1rem;
     border-color: white;
     font-size: x-large;
     font-weight: bold;
@@ -188,9 +194,15 @@ li {
     text-transform: uppercase;
 }
 
+@media only screen and (min-resolution: 120dpi) and (max-width: 1000px)  {
+    .key {
+        font-size: small;
+    }
+}
+
 .widekey {
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
 }
 
 
@@ -200,12 +212,12 @@ li {
     display:inline-block;
     border-style: solid;
     border-width: 1px;
-    padding-left: 20px;
-    padding-right: 20px;
+    padding-left: 1rem;
+    padding-right: 1rem;
     padding-top: 2px;
     padding-bottom: 2px;
     border-color: white;
-    margin: 5px 5px 5px 5px;
+    margin: .2rem .2rem .2rem .2rem;
     text-transform: uppercase;    
 }
 
@@ -214,7 +226,7 @@ li {
     padding-right: 2px;
     padding-top: 2px;
     padding-bottom: 2px;
-    margin: 5px 5px 5px 5px;
+    margin: .2rem .2rem .2rem .2rem;
     text-transform: uppercase;
 }
 
