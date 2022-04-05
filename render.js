@@ -1,5 +1,4 @@
 class Renderer {
-
     constructor(rows, cols, asciimode, maxguesses, charset, word_picker, word_validator, update_keyboard) {
         this.rows = rows;
         this.cols = cols;
@@ -94,151 +93,118 @@ class Renderer {
         }
     }
 
+    grid_for(colfunc) {
+        for (let i=0; i < this.rows; ++i) {
+            for (let j=0; j < this.cols; ++j) {
+                colfunc(i,j);
+            }
+        }
+    }
+
+    async grid_for_async(colfunc) {
+        for (let i=0; i < this.rows; ++i) {
+            for (let j=0; j < this.cols; ++j) {
+                await colfunc(i,j);
+            }
+        }        
+    }
+
+    empty_grid_matrix() {
+        return Array.from({length: this.rows}, (v,i) => Array.from( {length: this.cols}, (v2,j) => {}));
+    }
+    
     async create_games()
     {
-        for (let i=0; i < this.rows; ++i)
-        {
-            let a = new Array();
-            for (let j=0; j < this.cols; ++j ) {
-                const g = await this.new_game(i*this.cols + j);
-                a.push(g);
-            }
-            this.controllers.push(a);
-        }    
+        this.controllers = this.empty_grid_matrix();
+        await this.grid_for_async( async (i,j) => {
+            this.controllers[i][j] = await this.new_game(i*this.cols + j);
+        });
     }
 
     create_small_share_board() {
-        let board = new Array();
+        let board = this.empty_grid_matrix();
         const wrong = "&#128997;";
         const numbers = ["&#48;&#65039;&#8419;","&#49;&#65039;&#8419;","&#50;&#65039;&#8419;","&#51;&#65039;&#8419;","&#52;&#65039;&#8419;","&#53;&#65039;&#8419;","&#54;&#65039;&#8419;","&#55;&#65039;&#8419;","&#56;&#65039;&#8419;","&#57;&#65039;&#8419;"];
         const spacer = "&#11035;";
 
-        for (let i=0; i<this.rows; ++i) {
-            for (let j=0; j<this.cols; ++j) {
-                const b = this.controllers[i][j].get_board();
-                if (board[i] === undefined) {
-                    board.push(new Array());
-                }
-
-                let spc = "";
-                if (j < this.cols-1) {
-                    spc = spacer;
-                }
-
-                if (!b.winner) {
-                    board[i].push(wrong+wrong+spc);
-                    continue;
-                }
-
-                let guesses = numbers[Math.trunc(b.gi/10)] + numbers[b.gi % 10];
-                board[i].push(guesses+spc);
+        this.grid_for((i,j) => {
+            const b = this.controllers[i][j].get_board();
+            let spc = "";
+            if (j < this.cols-1) {
+                spc = spacer;
             }
-        }
+
+            if (!b.winner) {
+                board[i][j] = wrong+wrong+spc;
+                return;
+            }
+
+            let guesses = numbers[Math.trunc(b.gi/10)] + numbers[b.gi % 10];
+            board[i][j] = guesses+spc;
+        });
 
         let textboard = "";
-        for (const row of board) {
-            for (const col of row) {
-                textboard += col;
-            }
+        board.forEach((row) => { 
+            row.forEach((col) => textboard += col); 
             textboard += '\n';
-        }
+        });
 
         return textboard;        
     }
 
     create_share_board(minrows, mincols) {
-        let board = new Array();
         //const maybe = "🟨";
         //const yes = "🟩";
         //const no = "⬛";
         const maybe = "&#x1f7e8;";
         const yes = "&#x1f7e9;";
         const no = "&#11035;";
-        for (let i=0; i<this.rows; ++i) {
-            for (let j=0; j<this.cols; ++j) {
-                const b = this.controllers[i][j].get_board();
-                const rowindex = i*minrows;
+        const charmap = {"M": maybe, "O": yes, "X": no};
 
-                if (board[rowindex] === undefined) {
-                    board.push(new Array());
-                }
+        let board = Array.from({length: this.rows*minrows}, () => Array.from({length: this.cols}, () => no.repeat(mincols)));
 
-                let rowcounter = 0;
-                for (const guess of b.board) {
-                    // row
-                    let word = ""
-                    for (let k = 0; k < mincols; ++k) {
-                        // word
-                        let c = guess.g[k];
-            
-                        if (c) {
-                            if (c.s === "M") {
-                                word += maybe; // 🟨
-                            }
-                            else if (c.s === "O") {
-                                word += yes; // 🟩
-                            }
-                            else {
-                                word += no; // ⬛
-                            }
-                        }
-                        else {
-                            word += no; // ⬛
-                        }
-                    }
+        this.grid_for( (i,j) => {
+            const b = this.controllers[i][j].get_board();
+            const rowindex = i*minrows;
 
-                    if (board[rowindex+rowcounter] === undefined) {
-                        board.push(new Array());
-                    }
-    
-                    board[rowindex+rowcounter].push(word);
-                    rowcounter++;
-                }
-            
-                for (let k = 0; k < minrows - b.board.length; ++k)
-                {
-                    let word = ""
-                    for (let l = 0; l < mincols; ++l) {
-                        // word
-                        word += no; // ⬛
-                    }
+            let rowcounter = 0;
+            for (const guess of b.board) {
+                // row
+                let word = ""
+                guess.g.forEach((e) => word += charmap[e.s]);
+                word.padEnd(mincols, no);
 
-                    if (board[rowindex+rowcounter] === undefined) {
-                        board.push(new Array());
-                    }
-
-                    board[rowindex+rowcounter].push(word);
-                    rowcounter++;
-                }
+                board[rowindex+rowcounter][j] = word;
+                rowcounter++;
             }
-        }
+        });
 
         let textboard = "";
         let rowcounter = 1;
-        for (const row of board) {
-            for (const col of row) {
-                textboard += col;
-                textboard += " ";
-            }
+        board.forEach((row) => { 
+            row.forEach((col) => textboard += col + " "); 
             textboard += '\n';
             if (rowcounter == minrows) {
                 textboard += '\n';
                 rowcounter = 0;
             }
             rowcounter++;
-        }
+        });
 
         return textboard;
     }
 
     create_board(parent, nochar, charclass, rowclass, minrows, mincols, board) {
-
         if (board.winner) {
             parent.classList.add("win");
         }
+
+        const blankmap = {M: "&#x1f7e8;", O: "&#x1f7e9;", X: "&#11035;"};
+        const nbsp = "&nbsp;";
+        const nullchar = { v: true, s: "X", c: nbsp }
+        const nullguess = { g: [] };
     
-        for (const guess of board.board) {
-            // row
+        let do_it = (guess, docursor) => {
             let r = document.createElement("div");
             r.classList.add(rowclass);
             for (let i = 0; i < mincols; ++i) {
@@ -246,70 +212,24 @@ class Renderer {
                 let c = guess.g[i];
                 let l = document.createElement("span");
                 l.innerHTML = "&nbsp;";
-    
-                if (c) {
-                    l.classList.add(charclass);
-    
-                    if (!c.v) {
-                        l.classList.add("invalidword");                    
-                    }
-                    else {
-                        l.classList.add(c.s);
-                    }
-    
-                    if (!nochar) { 
-                        l.innerHTML = c.c.length ? c.c : "&nbsp;";
-                    }
-                    else if (c.s === "M") {
-                        l.innerHTML = "&#x1f7e8;";
-                    }
-                    else if (c.s === "O") {
-                        l.innerHTML = "&#x1f7e9;";
-                    }
-                    else {
-                        l.innerHTML = "&#11035;";
-                    }
-                }
-                else {
-                    l.classList.add(charclass);
-                    l.classList.add("X");
-                    if (this.showcursor && (i === 0 || guess.g[i-1])) {
-                        l.classList.add(charclass+"cursor");
-                    }
-
-                    if (!nochar) { 
-                        l.innerHTML = "&nbsp;";
-                    } else {
-                        l.innerHTML = "&#11035;";
-                    }
-                }
-    
-                r.appendChild(l);
-            }
-            parent.appendChild(r);
-        }
-    
-        for (let i = 0; i < minrows - board.board.length; ++i)
-        {
-            let r = document.createElement("div");
-            r.classList.add(rowclass);
-            for (let j = 0; j < mincols; ++j) {
-                // word
-                let l = document.createElement("span");
-                l.innerHTML = "&nbsp;";
-    
                 l.classList.add(charclass);
-                l.classList.add("X");
-                if (!nochar) { 
-                    l.innerHTML = "&nbsp;";
-                } else {
-                    l.innerHTML = "&#11035;";
+                if (!c) {
+                    c = nullchar;
+                }
+    
+                l.classList.add( c.v ? c.s : "invalidword");                    
+                l.innerHTML = nochar ? blankmap[c.s] : (c.c.length ? c.c : nbsp);
+                if (docursor && this.showcursor && (i === 0 || guess.g[i-1])) {
+                    l.classList.add(charclass+"cursor");
                 }
 
                 r.appendChild(l);
             }
             parent.appendChild(r);
-        }
+        };
+
+        board.board.forEach(g => do_it(g, true));
+        Array.from(Array(minrows-board.board.length), () => do_it(nullguess, false));
     }
     
     on_draw(gameid, minrows, mincols, board) {
@@ -322,23 +242,21 @@ class Renderer {
         this.create_board(resultroot, true, this.resultcharclass, this.resultrowclass, minrows, mincols, board);
     }
     
-    create_area(parent, rows, cols, style) {
-        for (let i=0; i < rows; ++i) {
-            for( let j=0; j < cols; ++j) {
+    create_area(parent, style) {
+        this.grid_for( (i,j) => {
                 let game = document.createElement("div");
                 game.classList.add(style);
-                game.id = style + (i*cols + j);
+                game.id = style + (i*this.cols + j);
                 parent.appendChild(game);
-            }
-        }
+            });
     }
     
     setup_areas() {
         let boardarea = document.body.getElementsByClassName("boardarea")[0];
         let resultwindow = document.body.getElementsByClassName("resultwindow")[0];
     
-        this.create_area(boardarea, this.rows, this.cols, "game");
-        this.create_area(resultwindow, this.rows, this.cols, "resultgame");
+        this.create_area(boardarea, "game");
+        this.create_area(resultwindow, "resultgame");
 
         let display_toggle = document.getElementById("display_toggle");
         display_toggle.onclick = () => this.toggle_mode();
@@ -376,11 +294,7 @@ class Renderer {
     }
     
     win_count() {
-        let wins = 0;
-        for (const d of Object.keys(this.dones)) {
-            if (this.dones[d]) { wins++; }
-        }
-        return wins;
+        return Object.keys(this.dones).reduce( (p,c) => this.dones[c] ? p+1 : p, 0 );
     }
 
     next_game_time() {
@@ -398,25 +312,18 @@ class Renderer {
     }
 
     correct_word_grid() {
-        let board = new Array();
+        let board = this.empty_grid_matrix();
 
-        for (let i=0; i<this.rows; ++i) {
-            for (let j=0; j<this.cols; ++j) {
+        this.grid_for( (i,j) => {
                 const b = this.controllers[i][j].get_board();
-                if (board[i] === undefined) {
-                    board.push(new Array());
-                }
-                board[i].push(b.word);
-            }
-        }
+                board[i][j] = b.word;
+            });
 
         let textboard = "";
-        for (const row of board) {
-            for (const col of row) {
-                textboard += col + "&nbsp;";
-            }
+        board.forEach((row) => {
+            row.forEach((col) => textboard += col + "&nbsp;")
             textboard += '<br/>';
-        }
+        });
 
         return textboard;
     }
@@ -468,24 +375,21 @@ class Renderer {
         document.body.appendChild(w);
     }
 
-    async redraw()
+    redraw()
     {
         let guessnumber = 0;
-        for (let i=0; i < this.rows; ++i) {
-            for (let j=0; j < this.cols; ++j ) {
-                let b = this.controllers[i][j].get_board();
-                if (guessnumber < b.board.length) {
-                    guessnumber = b.board.length;
-                }
-                this.on_draw(i*this.cols + j, this.maxguesses, WORDLEN, b);
+        this.grid_for( (i,j) => {
+            let b = this.controllers[i][j].get_board();
+            if (guessnumber < b.board.length) {
+                guessnumber = b.board.length;
             }
-        }
+            this.on_draw(i*this.cols + j, this.maxguesses, WORDLEN, b);
+        });
 
         let stats = document.getElementById("stats");
         //stats.innerHTML = (this.maxguesses - guessnumber + 1) + "/" + this.maxguesses + "<br>" + Object.keys(this.dones).length + "/" + this.numboards;
         const num_unsolved = this.numboards - Object.keys(this.dones).length;
         stats.innerHTML = (this.maxguesses - guessnumber + (num_unsolved > 0 ? 1 : 0)) + " more turns. " + num_unsolved + " unsolved."
-
 
         if (Object.keys(this.dones).length === this.numboards)
         {
@@ -494,7 +398,7 @@ class Renderer {
         }
     }
     
-    async on_input(ev)
+    on_input(ev)
     {
         if (this.is_done) { return; }
 
@@ -503,12 +407,9 @@ class Renderer {
             return;
         }
 
-        for (let i=0; i < this.rows; ++i)
-        {
-            for (let j=0; j < this.cols; ++j ) {
+        this.grid_for( (i,j) => {
                 this.controllers[i][j].on_input(ev);
-            }
-        }
+            });
     
         this.redraw();
     }

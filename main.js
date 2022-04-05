@@ -8,19 +8,22 @@ function word_validator(word) {
     return usable_words.includes(word) || allowed_words.includes(word);
 }
 
-let game_counter = 0;
+let game_counter = -1;
 async function word_picker() {
     const d = new Date();
     const zeroPad = (num) => num.toString().padStart(2, '0');
-    const datenum = d.getUTCFullYear().toString() + zeroPad(d.getUTCMonth()) + zeroPad(d.getUTCDate()) + zeroPad(game_counter);
+    game_counter++;
+    const current_game = game_counter;
+    const datenum = d.getUTCFullYear().toString() + zeroPad(d.getUTCMonth()) + zeroPad(d.getUTCDate()) + zeroPad(current_game);
     const data = new TextEncoder().encode(datenum);
+    let word = "";
     const digest = await window.crypto.subtle.digest('SHA-256', data.buffer);
     const dv = new DataView(digest);
     const i = dv.getUint32() % usable_words.length;
 
-    const word = usable_words[i];
-    console.log ("game " + game_counter + " word is " + word);
-    game_counter++;
+    word = usable_words[i];
+    console.log ("game " + current_game + " word is " + word);
+
     return {gameid: datenum, word: word};
 }
 
