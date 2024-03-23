@@ -11,8 +11,9 @@ function create_key(c, doublewide) {
     else { k.innerHTML = c; }
 
     k.onclick = () => { 
-        var e = new KeyboardEvent("keyup", {bubbles : true, cancelable : true, key : c, char : c});
-        document.body.dispatchEvent(e);
+        var e = new KeyboardEvent("keydown", {bubbles : true, cancelable : true, key : c, char : c});
+        document.body.dispatchEvent(e);        
+        return false;
     };
 
     return k;
