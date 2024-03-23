@@ -219,7 +219,7 @@ class Renderer {
     
                 l.classList.add( c.v ? c.s : "invalidword");                    
                 l.innerHTML = nochar ? blankmap[c.s] : (c.c.length ? c.c : nbsp);
-                if (docursor && this.showcursor && (i === 0 || guess.g[i-1])) {
+                if (docursor && this.showcursor && (i === 0 || !guess.g[i])) {
                     l.classList.add(charclass+"cursor");
                 }
 
