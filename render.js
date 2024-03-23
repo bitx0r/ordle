@@ -32,7 +32,7 @@ class Renderer {
 
         this.clean_up_old(this.datekey);
 
-        document.addEventListener("keyup", (e)=> this.on_input(e));
+        document.addEventListener("keydown", (e)=> { return this.on_input(e);} );
     }
 
     toggle_mode() {
@@ -219,7 +219,7 @@ class Renderer {
     
                 l.classList.add( c.v ? c.s : "invalidword");                    
                 l.innerHTML = nochar ? blankmap[c.s] : (c.c.length ? c.c : nbsp);
-                if (docursor && this.showcursor && (i === 0 || !guess.g[i])) {
+                if (docursor && this.showcursor && (i == guess.g.length)) {
                     l.classList.add(charclass+"cursor");
                 }
 
@@ -400,11 +400,11 @@ class Renderer {
     
     on_input(ev)
     {
-        if (this.is_done) { return; }
+        if (this.is_done) { return false; }
 
         if (ev.ctrlKey && ev.shiftKey && ev.key === " ") {
             this.toggle_mode();
-            return;
+            return false;
         }
 
         this.grid_for( (i,j) => {
@@ -412,6 +412,15 @@ class Renderer {
             });
     
         this.redraw();
+	
+	if (ev.key === "Backspace")
+	{
+	    ev.stopPropagation();
+	    ev.preventDefault();
+	    return false;
+	}
+	
+	return false;
     }
 
     async start() {

@@ -76,9 +76,10 @@ class Controller {
 
         // backspace
         if (e.key === "Backspace") {
-            if (this.word.length === 0) { return; }
+            if (this.word.length === 0) { e.preventDefault(); e.stopPropagation(); return; }
             this.word = this.word.substring(0, this.word.length-1);
             e.preventDefault();
+            e.stopPropagation();
         }
         else if (this.valid_char(e.key) && this.word.length < this.minlength) {
             this.word = this.word.concat(e.key);
